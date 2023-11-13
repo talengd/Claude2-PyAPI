@@ -15,3 +15,4 @@ telebot
 werobot
 PyPDF2
 docx
+python-docx
