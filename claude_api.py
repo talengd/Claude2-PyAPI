@@ -2,7 +2,7 @@ import json
 import os
 import uuid
 import requests
-from curl_cffi import requests,Curl, CurlOpt
+from curl_cffi import requests, Curl, CurlOpt
 from dotenv import load_dotenv
 from common.log import logger
 import PyPDF2
@@ -11,16 +11,18 @@ import re
 from io import BytesIO
 
 load_dotenv()  # Load environment variables from .env file
+
+
 class Client:
 
-    def __init__(self, cookie,use_proxy=False):
+    def __init__(self, cookie, use_proxy=False):
         self.cookie = cookie
         self.use_proxy = use_proxy
         self.proxies = self.load_proxies_from_env()
-        #logger.info("__init__: use_proxy: {}".format(self.use_proxy))
-        #logger.info("__init__: proxies: {}".format(self.proxies))
-        self.organization_id =self.get_organization_id()
-        #self.organization_id ="28912dc3-bcd3-43c5-944c-a943a02d19fc"
+        # logger.info("__init__: use_proxy: {}".format(self.use_proxy))
+        # logger.info("__init__: proxies: {}".format(self.proxies))
+        self.organization_id = self.get_organization_id()
+        # self.organization_id ="28912dc3-bcd3-43c5-944c-a943a02d19fc"
 
     def load_proxies_from_env(self):
         proxies = {}
@@ -52,7 +54,7 @@ class Client:
             'Cookie': f'{self.cookie}'
         }
 
-        response = self.send_request("GET",url,headers=headers)
+        response = self.send_request("GET", url, headers=headers)
         if response.status_code == 200:
             res = json.loads(response.text)
             uuid = res[0]['uuid']
@@ -90,7 +92,7 @@ class Client:
             'Cookie': f'{self.cookie}'
         }
 
-        response = self.send_request("GET",url,headers=headers)
+        response = self.send_request("GET", url, headers=headers)
         conversations = response.json()
 
         # Returns all conversation information in a list
@@ -102,7 +104,7 @@ class Client:
     # Send Message to Claude
     def send_message(self, prompt, conversation_id, attachment=None):
         url = "https://claude.ai/api/append_message"
-        #print("send_message,attachment"+attachment)
+        # print("send_message,attachment"+attachment)
         # Upload attachment if provided
         attachments = []
         if attachment:
@@ -182,7 +184,7 @@ class Client:
             'TE': 'trailers'
         }
 
-        response = self.send_request("DELETE",url,headers=headers, data=payload)
+        response = self.send_request("DELETE", url, headers=headers, data=payload)
         # Returns True if deleted or False if any error in deleting
         if response.status_code == 200:
             return True
@@ -206,7 +208,7 @@ class Client:
             'Cookie': f'{self.cookie}'
         }
 
-        response = self.send_request("GET",url,headers=headers,params={'encoding': 'utf-8'})
+        response = self.send_request("GET", url, headers=headers, params={'encoding': 'utf-8'})
         print(type(response))
 
         # List all the conversations in JSON
@@ -238,7 +240,7 @@ class Client:
             'Sec-Fetch-Site': 'same-origin',
             'TE': 'trailers'
         }
-        response = self.send_request("POST",url,headers=headers, data=payload)
+        response = self.send_request("POST", url, headers=headers, data=payload)
         # Returns JSON of the newly created conversation information
         return response.json()
 
@@ -253,7 +255,7 @@ class Client:
         return True
 
     def upload_attachment(self, file_path):
-        if file_path.endswith(('.txt', '.pdf', '.csv','.docx','.doc')):
+        if file_path.endswith(('.txt', '.pdf', '.csv', '.docx', '.doc')):
             file_name = os.path.basename(file_path)
             file_size = os.path.getsize(file_path)
             file_type = "text/plain"
@@ -303,7 +305,7 @@ class Client:
             'file': (file_name, open(file_path, 'rb'), content_type),
             'orgUuid': (None, self.organization_id)
         }
-        response = self.send_request(url, "POST",headers=headers, files=files)
+        response = self.send_request(url, "POST", headers=headers, files=files)
         if response.status_code == 200:
             return response.json()
         else:
@@ -333,7 +335,7 @@ class Client:
             'TE': 'trailers'
         }
 
-        response = self.send_request("POST",url,headers=headers, data=payload)
+        response = self.send_request("POST", url, headers=headers, data=payload)
         if response.status_code == 200:
             return True
         else:
@@ -341,6 +343,8 @@ class Client:
 
     def send_request(self, method, url, headers, data=None, files=None, params=None, stream=False):
         if self.use_proxy:
-            return requests.request(method, url, headers=headers, data=data, files=files, params=params,impersonate="chrome110",proxies=self.proxies,timeout=500)
+            return requests.request(method, url, headers=headers, data=data, files=files, params=params,
+                                    impersonate="chrome110", proxies=self.proxies, timeout=500)
         else:
-            return requests.request(method, url, headers=headers, data=data, files=files, params=params,impersonate="chrome110",timeout=500)
+            return requests.request(method, url, headers=headers, data=data, files=files, params=params,
+                                    impersonate="chrome110", timeout=500)
